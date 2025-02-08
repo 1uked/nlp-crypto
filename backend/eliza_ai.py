@@ -1,12 +1,10 @@
 import os
 import json
-import openai
 from openai import OpenAI
 from bnb_interaction import get_bnb_balance, send_dummy_transaction
 
 # Set your OpenAI API key from environment variables
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = os.getenv(OPENAI_API_KEY)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY_")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def parse_intent(message: str) -> dict:
@@ -39,9 +37,10 @@ For a send transaction:
 For general chat:
     {{"command": "chat", "message": "<the message>"}}
 """
+    print(os.getenv("OPENAI_API_KEY_"))
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": message}
@@ -98,12 +97,12 @@ def process_message(message: str) -> str:
             # )
             # return response["choices"][0]["text"].strip()
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     # {"role": "system", "content": prompt},
                     {"role": "user", "content": chat_message}
                 ],
-                max_tokens=200,
+                max_tokens=500,
                 temperature=0.5,
             )
             return response.choices[0].message.content.strip()

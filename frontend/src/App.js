@@ -3,6 +3,7 @@ import Particle from "./components/Particle"
 import PromptBar from "./components/PromptBar";
 import Header from "./components/Header";
 import Sidebar from "./components/SideBar";
+import Footer from "./components/Footer";
 import React, { useState } from 'react';
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
                       <p>Response: {response}</p>
                   </div>
               )}
+              <Footer />
           </div>
       </div>
   );

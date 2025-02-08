@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import elicon from "../../src/assets/elizaos-logo.png"
 
 const Sidebar = ({ isOpen, onToggle }) => {
     return (
@@ -79,18 +80,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
             >
                 {isOpen ? (
                     <Typography variant="caption">
-                        Powered by ElizaOS{" "}
-                        <img
-                            src="../assets/elizaos-logo.png"
-                            style={{ height: "16px", marginLeft: "4px" }}
-                        />
+                        Powered by ElizaOS
                     </Typography>
                 ) : (
                     <IconButton>
-                        <img
-                            src="../assets/elizaos-logo.png"
-                            style={{ height: "24px" }}
-                        />
+                        <img src={elicon} alt="Eliza Logo" style={{ height: "24px", marginLeft: "4px" }} />;
                     </IconButton>
                 )}
             </Box>

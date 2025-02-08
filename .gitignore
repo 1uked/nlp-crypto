@@ -1,0 +1,58 @@
+# General OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Python (backend) ignores
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.venv/
+backend/env/
+backend/venv/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.tox/
+backend/.coverage
+backend/coverage.xml
+backend/.env
+backend/.env.local
+backend/instance/
+backend/.DS_Store
+
+# Node.js (frontend) ignores
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
+frontend/.turbo/
+frontend/.env
+frontend/.env.local
+frontend/.cache
+frontend/dist/
+frontend/build/
+
+# Solidity (smart contracts) ignores
+smart_contracts/.openzeppelin/
+smart_contracts/node_modules/
+smart_contracts/artifacts/
+smart_contracts/cache/
+smart_contracts/.env
+smart_contracts/build/
+smart_contracts/deployments/
+
+# Docker ignores
+docker/.env
+docker/.dockerignore
+*.pid
+*.sock
+
+# Logs and temp files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*

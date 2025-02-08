@@ -1,10 +1,19 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 from eliza_ai import process_message
 from bnb_interaction import get_bnb_balance, send_dummy_transaction
 
 app = FastAPI(title="ElizaOS Backend", version="1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins. For production, specify your trusted domains.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Data model for the chat request
 class ChatRequest(BaseModel):

@@ -18,7 +18,7 @@ export default function Particle() {
                     id="tsparticles"
                     options={{
                         fullScreen: { enable: true, zIndex: -1 },
-                        background: { color: "transparent" },
+                        background: { color: "#EEEEEE" },
                         fpsLimit: 60,
                         interactivity: {
                             events: {

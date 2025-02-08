@@ -84,7 +84,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     </Typography>
                 ) : (
                     <IconButton>
-                        <img src={elicon} alt="Eliza Logo" style={{ height: "24px", marginLeft: "4px" }} />;
+                        <img src={elicon} alt="Eliza Logo" style={{ height: "24px", marginLeft: "4px" }} />
                     </IconButton>
                 )}
             </Box>

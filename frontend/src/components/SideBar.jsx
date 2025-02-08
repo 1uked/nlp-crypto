@@ -74,24 +74,21 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     bottom: 0,
                     width: "100%",
                     textAlign: "center",
-                    p: 1,
-                    borderTop: "1px solid #00ADB5",
+                    paddingY: 1,
                 }}
             >
                 {isOpen ? (
                     <Typography variant="caption">
                         Powered by ElizaOS{" "}
                         <img
-                            src="/path/to/elizaos-logo.png" // Replace with your logo image path
-                            alt="ElizaOS Logo"
+                            src="../assets/elizaos-logo.png"
                             style={{ height: "16px", marginLeft: "4px" }}
                         />
                     </Typography>
                 ) : (
                     <IconButton>
                         <img
-                            src="/path/to/elizaos-logo.png" // Replace with your logo image path
-                            alt="ElizaOS Logo"
+                            src="../assets/elizaos-logo.png"
                             style={{ height: "24px" }}
                         />
                     </IconButton>

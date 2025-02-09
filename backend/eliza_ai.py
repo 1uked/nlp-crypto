@@ -1,3 +1,4 @@
+# eliza_ai.py
 import os
 import json
 from openai import OpenAI
@@ -7,29 +8,20 @@ from bnb_interaction import get_bnb_balance, send_transaction
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY_")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def parse_intent(message: str) -> dict:
-    """
-    Use OpenAI to parse the user message and determine the intended command.
-    
-    The prompt instructs the model to decide whether the user is asking to:
-      - Query a balance ("balance")
-      - Send a transaction ("send")
-      - Engage in general conversation ("chat")
-    
-    The expected output is a JSON object that includes:
-      - "command": one of "balance", "send", or "chat"
-      - For "balance": an "address" field.
-      - For "send": an "address" and "amount" field.
-      - For "chat": a "message" field (the conversation prompt).
-    """
+def parse_intent(message: str, history: list) -> dict:
+    # Use attribute access (m.role and m.text) since m is a Pydantic model instance.
+    conversation_context = "\n".join([f"{m.role}: {m.text}" for m in history])
     prompt = f"""
-You are a command parser for a blockchain assistant. Interpret the user's message and determine if it is a blockchain command or just a general conversation.
+You are a command parser for a blockchain assistant. The conversation history is:
+{conversation_context}
+
+Interpret the user's message and determine if it is a blockchain command or just general conversation.
 The commands are as follows:
 1. "balance": Query the BNB balance. Expect an "address" parameter.
 2. "send": Send a transaction. Expect an "address" and an "amount" parameter.
 3. "chat": General conversation.
-    
-Return a valid JSON with the following structure (without any additional text):
+
+Return a valid JSON with the following structure (with no additional text):
 For a balance query:
     {{"command": "balance", "address": "<BNB_address>"}}
 For a send transaction:
@@ -37,7 +29,6 @@ For a send transaction:
 For general chat:
     {{"command": "chat", "message": "<the message>"}}
 """
-    print(os.getenv("OPENAI_API_KEY_"))
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -51,16 +42,12 @@ For general chat:
         result = response.choices[0].message.content.strip()
         intent = json.loads(result)
     except Exception as e:
-        # Fallback: if something goes wrong, assume it's a general chat
+        # Fallback: assume a general chat if something goes wrong
         intent = {"command": "chat", "message": message}
     return intent
 
-def process_message(message: str) -> str:
-    """
-    Process the input message by first determining the intent using OpenAI's NLP,
-    then executing the corresponding blockchain command or general chat response.
-    """
-    intent = parse_intent(message)
+def process_message(message: str, history: list) -> str:
+    intent = parse_intent(message, history)
     command = intent.get("command", "chat")
     
     if command == "balance":
@@ -81,6 +68,7 @@ def process_message(message: str) -> str:
         try:
             amount = float(amount)
             tx_hash = send_transaction(to_address, amount)
+            # Return the transaction hash so the frontend can show a clickable link.
             return f"Transaction sent! TX Hash: {tx_hash}"
         except Exception as e:
             return f"Error sending transaction: {e}"
@@ -88,18 +76,9 @@ def process_message(message: str) -> str:
     elif command == "chat":
         chat_message = intent.get("message", message)
         try:
-            # For general conversation, delegate to OpenAI
-            # response = openai.Completion.create(
-            #     engine="text-davinci-003",
-            #     prompt=chat_message,
-            #     max_tokens=150,
-            #     temperature=0.7,
-            # )
-            # return response["choices"][0]["text"].strip()
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    # {"role": "system", "content": prompt},
                     {"role": "user", "content": chat_message}
                 ],
                 max_tokens=500,

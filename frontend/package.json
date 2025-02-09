@@ -9,10 +9,10 @@
     "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.3",
     "@tsparticles/react": "^3.0.0",
+    "ajv": "^8.17.1",
     "cra-template": "1.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-particles": "^2.12.2",
     "react-scripts": "5.0.1",
     "tsparticles": "^3.8.1",
     "web-vitals": "^4.2.4"

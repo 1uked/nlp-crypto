@@ -1,19 +1,22 @@
-# Wired: Manage your Assets with Ease
+# Wired: Manage Your Assets with Ease
 
-This project provides a conversational interface (via Natural Language) to interact with blockchain functionalities. It allows users to send BNB, check balances, schedule transactions, manage aliases for addresses, and even chat or ask questions, all within a user-friendly environment.
+This project provides a conversational interface (via Natural Language) to interact with blockchain functionalities. It allows users to send BNB and AVAX, check balances, schedule transactions, manage aliases for addresses, and even chat or ask questions, all within a user-friendly environment.
 
 ![Example Use](res/ex-chat1.png)
 
-# Key Features
+## Key Features
 
-- **Send BNB**: Initiate transactions to send BNB to specified addresses.
-- **Check Balance**: Easily retrieve the balance of a given address.
-- **Schedule Sends**: Schedule sends of BNB for a specific time in the future.
-- **Assign Alias to Addresses**: Give human-readable aliases to addresses.
+- **Send BNB & AVAX**: Initiate transactions to send BNB or AVAX to specified addresses.
+- **Cross-Chain Transactions**: Seamlessly interact with both BNB Smart Chain and Avalanche.
+- **Check Balances Across Chains**: Easily retrieve wallet balances for both networks.
+- **Schedule Sends**: Schedule BNB or AVAX transactions for a specific time in the future.
+- **Assign Alias to Addresses**: Give human-readable aliases to wallet addresses.
 - **Chain Commands**: Chain multiple commands in one conversation.
+- **DeFi Position Management (Upcoming Feature)**: Manage yield farming, liquidity pools, and DeFi positions on Avalanche.
+- **Cross-Chain Asset Bridging (Upcoming Feature)**: Move assets between chains automatically.
 - **Chat or Ask Questions**: Use the conversational interface (powered by Eliza-like AI) to chat or query information.
 
-# Project Structure
+## Project Structure
 
 ```
 ├── README.md
@@ -21,6 +24,8 @@ This project provides a conversational interface (via Natural Language) to inter
 │   ├── README.md
 │   ├── __pycache__
 │   ├── avalanche_interaction.py
+│   ├── avalanche_defi.py          # DeFi management (if applicable)
+│   ├── cross_chain.py             # Cross-chain bridging (if applicable)
 │   ├── bnb_interaction.py
 │   ├── config.py
 │   ├── eliza_ai.py
@@ -40,12 +45,14 @@ This project provides a conversational interface (via Natural Language) to inter
 
 ## Backend (Python)
 
-- **avalanche\_interaction.py** / **bnb\_interaction.py**: Blockchain interaction modules for Avalanche and BNB (respectively).
-- **eliza\_ai.py**: AI-based conversational interface (Eliza-like).
-- **scheduler.py**: Manages scheduling of BNB sends.
+- **avalanche_interaction.py** / **bnb_interaction.py**: Blockchain interaction modules for Avalanche and BNB (respectively).
+- **avalanche_defi.py**: Module for managing DeFi operations on Avalanche (if applicable).
+- **cross_chain.py**: Module for cross-chain asset bridging (if applicable).
+- **eliza_ai.py**: AI-based conversational interface (Eliza-like).
+- **scheduler.py**: Manages scheduling of transactions.
 - **server.py**: Main server to handle requests from the frontend and orchestrate the logic.
-- **config.py**: Contains environment, API keys, or blockchain node configuration.
-- **tbnb\_sell.py**: Additional module for TBNB-related selling transactions.
+- **config.py**: Contains environment, API keys, and blockchain node configuration.
+- **tbnb_sell.py**: Additional module for TBNB-related selling transactions.
 
 ## Frontend (React)
 
@@ -53,11 +60,11 @@ This project provides a conversational interface (via Natural Language) to inter
 - **public/**: Publicly served assets like `index.html` and images.
 - **package.json**: Project metadata and dependencies for the React app.
 
-# Getting Started
+## Getting Started
 
 Below are the steps to set up and run the project in a local development environment.
 
-## Environment Setup
+### Environment Setup
 
 1. **Install Python 3.10+** (or whichever version you have confirmed working).
 2. **Install Node.js** (Recommended v16+ or LTS version) and `npm`.
@@ -79,23 +86,26 @@ Below are the steps to set up and run the project in a local development environ
    ```bash
    pip install -r requirements.txt
    ```
-3. Adjust settings in `config.py` as needed (e.g., API keys, blockchain node URLs).
+3. Adjust settings in `config.py` as needed (e.g., API keys, blockchain node URLs for BNB and Avalanche).
 
-# Usage
+## Usage
 
-1. **Natural Language Interface**: Users can type commands like “Send 0.1 BNB to Alice” or “Check my balance” or “Schedule 1 BNB to Bob tomorrow at 3pm.”
+1. **Natural Language Interface**: Users can type commands like:
+   - "Send 0.1 BNB to Alice"
+   - "Check my balance on Avalanche"
+   - "Schedule 1 AVAX to Bob tomorrow at 3pm."
 2. **AI Chat**: The backend’s Eliza-like interface allows you to ask general questions or chain commands.
-3. **Aliases**: You can set an alias for a wallet address once, and then refer to that alias in future commands.
+3. **Aliases**: You can set an alias for a wallet address once and then refer to that alias in future commands.
 
-# Running the Backend
+## Running the Backend
 
 1. From the `backend` directory (with your virtual environment activated), run:
    ```bash
    uvicorn server:app --reload
    ```
-2. The server typically starts on http\://localhost:3000 (or whichever port is configured).
+2. The backend server will typically run on [http://localhost:8000](http://localhost:8000).
 
-# Running the Frontend
+## Running the Frontend
 
 1. Navigate to the `frontend` folder:
    ```bash
@@ -111,7 +121,16 @@ Below are the steps to set up and run the project in a local development environ
    ```
 4. Access the React application in your browser at [http://localhost:3000](http://localhost:3000).
 
-# Contributing
+## Bounty Focus: Avalanche AI Agents for DeFi & Cross-Chain Operations
+
+This project integrates an AI-powered conversational interface that:
+
+- **Streamlines DeFi operations** on Avalanche by allowing users to send AVAX, check balances, and schedule transactions with natural language commands.
+- **Enables cross-chain interactions** by supporting both Binance Smart Chain and Avalanche, with clear instructions to switch chains.
+- **Previews transactions and ensures safety checks** before execution, providing transparency through transaction previews and logs.
+- **Offers potential for DeFi position management** and automated bridging of assets across chains, aligning with the bounty’s focus on optimizing cross-chain operations.
+
+## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.
 
@@ -120,8 +139,3 @@ Contributions are welcome! Feel free to submit issues or pull requests.
 3. Commit your changes (`git commit -m 'Add awesome feature'`).
 4. Push to the branch (`git push origin feature/my-awesome-feature`).
 5. Open a Pull Request.
-
-# License
-
-This project is released under the [MIT License](LICENSE). Feel free to use and modify this code.
-

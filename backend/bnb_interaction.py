@@ -29,7 +29,7 @@ def send_transaction(recipient: str, amount: float) -> str:
     """
     web3 = connect_to_bsc()
     sender_address = TBNB_WALLET
-    private_key = PRIVATE_KEY  # Store your private key securely
+    private_key = PRIVATE_KEY  # Store your private key securelyA
 
     if not sender_address or not private_key:
         raise ValueError("Sender address or private key is not set.")

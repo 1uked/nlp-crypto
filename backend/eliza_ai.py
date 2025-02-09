@@ -3,63 +3,59 @@
 import os
 import json
 import datetime
-from openai import OpenAI
+
+# Make sure you have installed the OpenAI Python library:
+#    pip install openai
+import openai
+
 from bnb_interaction import get_bnb_balance, send_transaction
-from avalanche_interaction import get_avalanche_balance, send_avalanche_transaction
-import scheduler  # For scheduling payments
+from avax_interaction import get_avax_balance, send_avax_transaction
+import scheduler  # Your module for scheduling payments
 
-# Set your OpenAI API key (make sure it’s set in your environment)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY_")
-client = OpenAI(api_key=OPENAI_API_KEY)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY_")  # Set your OpenAI key in the environment
+openai.api_key = OPENAI_API_KEY
 
-# -----------------------------------------
-# Global dictionary to store name–address mappings
-# -----------------------------------------
+# Stores name–address mappings for easy lookup
 saved_addresses = {}
 
 def parse_intent(message: str, history: list) -> dict:
     """
-    Use OpenAI to parse the user message into a precise command.
+    Uses an LLM to parse a user message into a JSON command object.
 
-    The system prompt explains that you are a blockchain assistant who can:
-      1. Check wallet balances (command: "balance") with an optional "chain" field.
-      2. Send transactions immediately (command: "send") with an optional "chain" field.
-      3. Schedule a payment (command: "schedule_payment")—provide a payment object (with "address" and "amount")
-         and a "scheduled_time" in ISO format or relative format. If the user specifies a relative time (like 'in 1 minute'),
-         convert it to an absolute ISO datetime using the current time.
-      4. Chain multiple commands (command: "chain")—return an array of commands.
-      5. Chat normally (command: "chat").
-      6. Save a name for an address (command: "save")—requires "address" and "name".
+    The system prompt describes the possible commands:
+      - "balance": Check a wallet address balance on BNB or Avalanche.
+      - "send": Send a transaction on BNB or Avalanche.
+      - "schedule_payment": Schedule a future transaction (time + address + amount).
+      - "chain": Chain multiple commands in sequence.
+      - "chat": Normal conversation.
+      - "save": Save an address under a given name.
 
-    Output only valid JSON with no extra commentary.
+    The "chain" field may appear in the JSON to specify "bnb" or "avalanche".
     """
-    # Get the current UTC time in ISO format with a trailing 'Z'
     current_time = datetime.datetime.utcnow().isoformat() + "Z"
-    conversation_context = "\n".join([f"{m.role}: {m.text}" for m in history])
+    conversation_context = "\n".join(f"{m.role}: {m.text}" for m in history)
 
     system_prompt = f"""
 You are a blockchain assistant with the following capabilities:
-1. Check the balance of a wallet. Respond with command "balance" and provide the wallet address.
-2. Send a transaction immediately. Respond with command "send" and provide the recipient address and amount.
-3. Schedule a payment. Respond with command "schedule_payment", providing a payment object (with "address" and "amount") and a "scheduled_time" in ISO or relative string (e.g., 'in 1 minute').
-4. Chain multiple commands. Respond with command "chain" and include an array of commands.
-5. For general conversation, respond with command "chat" and a message.
-6. Save a name for an address. Respond with command "save" and provide "address" and "name".
+1. "balance": Return the balance of the provided address. Include a "chain" field ("bnb" or "avalanche").
+2. "send": Send a transaction. Include "chain", "address", and "amount".
+3. "schedule_payment": Provide "payment" (with "address" & "amount") plus "scheduled_time" (ISO or relative).
+4. "chain": Return an array of commands to be processed in order.
+5. "chat": For normal conversation, return "chat" and a message.
+6. "save": Save a name–address pair (both required).
 
-For cross-chain operations, include an optional "chain" field in your JSON output. Use "bnb" for Binance Smart Chain and "avalanche" for Avalanche. For example:
-For sending a transaction on Avalanche:
-    {{"command": "send", "chain": "avalanche", "address": "<recipient_address>", "amount": "<amount>"}}
-For checking balance on Avalanche:
-    {{"command": "balance", "chain": "avalanche", "address": "<address>"}}
+Use valid JSON only, with no extra text. Example for sending on Avalanche:
+{{"command": "send", "chain": "avalanche", "address": "0x123", "amount": "0.5"}}
 
-Current UTC time is: {current_time}
+Current UTC time: {current_time}
 
 Conversation history:
 {conversation_context}
 """
+
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",  # or any other model you're using
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": message}
@@ -70,65 +66,72 @@ Conversation history:
         result = response.choices[0].message.content.strip()
         intent = json.loads(result)
     except Exception:
-        # Fallback: assume a general chat if something goes wrong
+        # Fallback to simple chat if JSON parsing fails
         intent = {"command": "chat", "message": message}
+
     return intent
 
 
 def process_chain(commands: list) -> str:
-    """Process a chain of commands sequentially."""
+    """Process a list of commands (for 'command': 'chain')."""
     responses = []
+
     for cmd in commands:
         c = cmd.get("command")
-        chain = cmd.get("chain", "bnb")  # Default to BNB if not provided.
+        chain = cmd.get("chain", "bnb").lower()
 
         if c == "send":
             try:
-                amount = float(cmd.get("amount"))
-                if chain.lower() == "avalanche":
-                    tx_hash = send_avalanche_transaction(cmd.get("address"), amount)
+                amount = float(cmd.get("amount", 0))
+                address = cmd.get("address", "")
+                if chain == "avalanche":
+                    tx_hash = send_avax_transaction(address, amount)
+                    responses.append(f"Sent {amount} AVAX to {address}. TX hash: {tx_hash}")
                 else:
-                    tx_hash = send_transaction(cmd.get("address"), amount)
-                responses.append(f"Sent {amount} BNB/AVAX to {cmd.get('address')}. TX Hash: {tx_hash}")
+                    tx_hash = send_transaction(address, amount)
+                    responses.append(f"Sent {amount} BNB to {address}. TX hash: {tx_hash}")
             except Exception as e:
                 responses.append(f"Error sending payment: {e}")
 
         elif c == "balance":
             try:
-                if chain.lower() == "avalanche":
-                    balance = get_avalanche_balance(cmd.get("address"))
+                address = cmd.get("address", "")
+                if chain == "avalanche":
+                    balance = get_avax_balance(address)
+                    responses.append(f"Balance of {address} on Avalanche: {balance}")
                 else:
-                    balance = get_bnb_balance(cmd.get("address"))
-                responses.append(f"Balance of {cmd.get('address')} on {chain} is {balance}.")
+                    balance = get_bnb_balance(address)
+                    responses.append(f"Balance of {address} on BNB: {balance}")
             except Exception as e:
                 responses.append(f"Error retrieving balance: {e}")
 
         elif c == "schedule_payment":
-            payment = cmd.get("payment", {})
-            scheduled_time = cmd.get("scheduled_time")
-            if not payment.get("address") or not payment.get("amount") or not scheduled_time:
-                responses.append("Invalid schedule command in chain.")
-                continue
             try:
-                scheduler.schedule_payment(payment, scheduled_time)
-                responses.append(f"Payment scheduled for {scheduled_time} to {payment.get('address')} on {chain.upper()}.")
+                payment = cmd.get("payment", {})
+                scheduled_time = cmd.get("scheduled_time")
+                if payment and scheduled_time:
+                    # Here you'd decide which chain to use inside scheduler, if needed
+                    scheduler.schedule_payment(payment, scheduled_time, chain=chain)
+                    responses.append(f"Scheduled payment of {payment.get('amount')} to {payment.get('address')} at {scheduled_time} on {chain}.")
+                else:
+                    responses.append("Invalid schedule command.")
             except Exception as e:
                 responses.append(f"Error scheduling payment: {e}")
 
+        elif c == "save":
+            try:
+                address = cmd.get("address")
+                name = cmd.get("name")
+                if address and name:
+                    saved_addresses[name] = address
+                    responses.append(f"Saved name '{name}' with address '{address}'.")
+                else:
+                    responses.append("Invalid save command: address or name missing.")
+            except Exception as e:
+                responses.append(f"Error saving address: {e}")
+
         elif c == "chat":
             responses.append(cmd.get("message", ""))
-
-        # -------------------------
-        # NEW: 'save' command in a chain
-        # -------------------------
-        elif c == "save":
-            address = cmd.get("address")
-            name = cmd.get("name")
-            if not address or not name:
-                responses.append("Invalid save command: Please provide both 'address' and 'name'.")
-            else:
-                saved_addresses[name] = address
-                responses.append(f"Saved name '{name}' with address '{address}'.")
 
         else:
             responses.append("Unknown command in chain.")
@@ -137,58 +140,75 @@ def process_chain(commands: list) -> str:
 
 
 def process_message(message: str, history: list) -> str:
-    """Process the input message by parsing its intent and executing the corresponding command."""
+    """Process a user message, parse its intent, execute the corresponding command, return a response."""
     intent = parse_intent(message, history)
     command = intent.get("command", "chat")
-    chain = intent.get("chain", "bnb")  # Default chain is BNB.
+    chain = intent.get("chain", "bnb").lower()
 
+    # 1. Check balance
     if command == "balance":
         address = intent.get("address")
         if not address:
-            return "No valid address provided for balance inquiry."
+            return "No valid address provided."
         try:
-            if chain.lower() == "avalanche":
-                balance = get_avalanche_balance(address)
+            if chain == "avalanche":
+                balance = get_avax_balance(address)
+                return f"Balance of {address} on Avalanche: {balance}"
             else:
                 balance = get_bnb_balance(address)
-            return f"The balance of {address} on {chain.upper()} is {balance}."
+                return f"Balance of {address} on BNB: {balance}"
         except Exception as e:
             return f"Error retrieving balance: {e}"
 
+    # 2. Send transaction
     elif command == "send":
-        to_address = intent.get("address")
+        address = intent.get("address")
         amount = intent.get("amount")
-        if not to_address or not amount:
-            return "Invalid send command parameters. Please provide both an address and an amount."
+        if not address or not amount:
+            return "Invalid send command. Provide 'address' and 'amount'."
         try:
             amount = float(amount)
-            if chain.lower() == "avalanche":
-                tx_hash = send_avalanche_transaction(to_address, amount)
+            if chain == "avalanche":
+                tx_hash = send_avax_transaction(address, amount)
+                return f"Sent {amount} AVAX to {address}. Tx hash: {tx_hash}"
             else:
-                tx_hash = send_transaction(to_address, amount)
-            return f"Transaction sent on {chain.upper()}! TX Hash: {tx_hash}"
+                tx_hash = send_transaction(address, amount)
+                return f"Sent {amount} BNB to {address}. Tx hash: {tx_hash}"
         except Exception as e:
             return f"Error sending transaction: {e}"
 
+    # 3. Schedule a payment
     elif command == "schedule_payment":
         payment = intent.get("payment", {})
         scheduled_time = intent.get("scheduled_time")
-        if not payment.get("address") or not payment.get("amount") or not scheduled_time:
-            return "Invalid scheduling command. Please provide payment details and a scheduled time."
+        if not (payment.get("address") and payment.get("amount") and scheduled_time):
+            return "Missing payment details or scheduled time."
         try:
-            scheduler.schedule_payment(payment, scheduled_time)
-            return f"Payment scheduled for {scheduled_time} to {payment.get('address')} on {chain.upper()}."
+            # You might pass `chain` to your scheduler if you handle cross-chain scheduling.
+            scheduler.schedule_payment(payment, scheduled_time, chain=chain)
+            return f"Payment scheduled for {scheduled_time} on {chain} to {payment.get('address')}."
         except Exception as e:
             return f"Error scheduling payment: {e}"
 
+    # 4. Chain multiple commands
     elif command == "chain":
         commands = intent.get("commands", [])
         return process_chain(commands)
 
-    elif command == "chat":
+    # 5. Save name–address
+    elif command == "save":
+        address = intent.get("address")
+        name = intent.get("name")
+        if not (address and name):
+            return "Provide both 'address' and 'name' to save."
+        saved_addresses[name] = address
+        return f"Saved name '{name}' with address '{address}'."
+
+    # 6. General chat fallback
+    else:  # "chat"
         chat_message = intent.get("message", message)
         try:
-            response = client.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": chat_message}],
                 max_tokens=500,
@@ -197,17 +217,3 @@ def process_message(message: str, history: list) -> str:
             return response.choices[0].message.content.strip()
         except Exception as e:
             return f"Error generating chat response: {e}"
-
-    # -------------------------------------
-    # NEW: 'save' command
-    # -------------------------------------
-    elif command == "save":
-        address = intent.get("address")
-        name = intent.get("name")
-        if not address or not name:
-            return "Invalid save command. Please provide both 'address' and 'name'."
-        saved_addresses[name] = address
-        return f"Saved name '{name}' with address '{address}'."
-
-    else:
-        return "Sorry, I couldn't understand your command."

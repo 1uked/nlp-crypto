@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Model to represent a single message in the conversation
+# Data model for an individual message
 class Message(BaseModel):
     role: str
     text: str
@@ -27,13 +27,13 @@ class ChatRequest(BaseModel):
     message: str
     history: List[Message] = []
 
+# ChatResponse returns the processed reply.
 class ChatResponse(BaseModel):
     reply: str
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # Pass both the new message and the history to the processor
         reply = process_message(request.message, request.history)
         return ChatResponse(reply=reply)
     except Exception as e:

@@ -14,3 +14,6 @@ TBNB_WALLET= os.getenv("TBNB_WALLET", "0x175bfe35A603327FEb55dC144039f0d08Ca5dfD
 # Use environment variables and secure storage.
 PRIVATE_KEY = os.getenv("PRIVATE_KEY", "")
 
+AVALANCHE_RPC_URL = "https://api.avax-test.network/ext/bc/C/rpc"
+AVALANCHE_WALLET = "0xYourAvalancheWalletAddress"
+AVALANCHE_PRIVATE_KEY = "YourAvalanchePrivateKey"

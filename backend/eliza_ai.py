@@ -59,7 +59,7 @@ Conversation history:
 """
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": message}
@@ -189,7 +189,7 @@ def process_message(message: str, history: list) -> str:
         chat_message = intent.get("message", message)
         try:
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o",
                 messages=[{"role": "user", "content": chat_message}],
                 max_tokens=500,
                 temperature=0.5,

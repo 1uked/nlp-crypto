@@ -121,15 +121,6 @@ Below are the steps to set up and run the project in a local development environ
    ```
 4. Access the React application in your browser at [http://localhost:3000](http://localhost:3000).
 
-## Bounty Focus: Avalanche AI Agents for DeFi & Cross-Chain Operations
-
-This project integrates an AI-powered conversational interface that:
-
-- **Streamlines DeFi operations** on Avalanche by allowing users to send AVAX, check balances, and schedule transactions with natural language commands.
-- **Enables cross-chain interactions** by supporting both Binance Smart Chain and Avalanche, with clear instructions to switch chains.
-- **Previews transactions and ensures safety checks** before execution, providing transparency through transaction previews and logs.
-- **Offers potential for DeFi position management** and automated bridging of assets across chains, aligning with the bounty’s focus on optimizing cross-chain operations.
-
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.

@@ -2,7 +2,7 @@
 
 This project provides a conversational interface (via Natural Language) to interact with blockchain functionalities. It allows users to send BNB, check balances, schedule transactions, manage aliases for addresses, and even chat or ask questions, all within a user-friendly environment.
 
-[Insert Image]
+![Example Use](res/ex-chat1.png)
 
 # Key Features
 

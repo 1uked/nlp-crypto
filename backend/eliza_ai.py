@@ -1,7 +1,7 @@
 import os
 import json
 from openai import OpenAI
-from bnb_interaction import get_bnb_balance, send_dummy_transaction
+from bnb_interaction import get_bnb_balance, send_transaction
 
 # Set your OpenAI API key from environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY_")
@@ -80,7 +80,7 @@ def process_message(message: str) -> str:
             return "Invalid send command parameters. Please provide both an address and an amount."
         try:
             amount = float(amount)
-            tx_hash = send_dummy_transaction(to_address, amount)
+            tx_hash = send_transaction(to_address, amount)
             return f"Transaction sent! TX Hash: {tx_hash}"
         except Exception as e:
             return f"Error sending transaction: {e}"

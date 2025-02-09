@@ -1,20 +1,20 @@
 from web3 import Web3
-from config import BNB_RPC_URL, PRIVATE_KEY
+from config import TBNB_RPC_URL, TBNB_WALLET, PRIVATE_KEY
 
-# Initialize the Web3 connection using the provided RPC URL
-web3 = Web3(Web3.HTTPProvider(BNB_RPC_URL))
+def connect_to_bsc():
+    """Connects to the Binance Smart Chain Testnet and returns a Web3 instance."""
+    web3 = Web3(Web3.HTTPProvider(TBNB_RPC_URL))
 
-if not web3.is_connected():
-    raise ConnectionError("Unable to connect to the BNB RPC endpoint.")
+    if not web3.is_connected():
+        raise ConnectionError("Failed to connect to BSC Testnet")
 
-# Create an account object from the private key (for signing transactions)
-account = web3.eth.account.from_key(PRIVATE_KEY)
-
+    return web3
 
 def get_bnb_balance(address: str) -> float:
     """
     Returns the balance (in BNB) for the specified address.
     """
+    web3 = connect_to_bsc()
     try:
         balance_wei = web3.eth.get_balance(address)
         balance_bnb = web3.from_wei(balance_wei, 'ether')
@@ -23,25 +23,34 @@ def get_bnb_balance(address: str) -> float:
         print(f"Error retrieving balance for {address}: {e}")
         raise
 
+def send_transaction(recipient: str, amount: float) -> str:
+    """
+    Sends a transaction to the specified recipient address with the given amount of BNB.
+    """
+    web3 = connect_to_bsc()
+    sender_address = TBNB_WALLET
+    private_key = PRIVATE_KEY  # Store your private key securely
 
-def send_dummy_transaction(to_address: str, amount: float) -> str:
-    """
-    Creates and sends a simple transaction transferring the specified amount of BNB.
-    This function is for demonstration purposes only.
-    """
-    try:
-        nonce = web3.eth.get_transaction_count(account.address)
-        txn = {
-            'nonce': nonce,
-            'to': to_address,
-            'value': web3.to_wei(amount, 'ether'),
-            'gas': 21000,
-            'gasPrice': web3.to_wei('5', 'gwei')
-        }
-        # Sign the transaction with the private key
-        signed_txn = web3.eth.account.sign_transaction(txn, PRIVATE_KEY)
-        tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        return web3.toHex(tx_hash)
-    except Exception as e:
-        print(f"Error sending transaction to {to_address}: {e}")
-        raise
+    if not sender_address or not private_key:
+        raise ValueError("Sender address or private key is not set.")
+
+    nonce = web3.eth.get_transaction_count(sender_address)
+
+    tx = {
+        'nonce': nonce,
+        'to': recipient,
+        'value': web3.to_wei(amount, 'ether'),
+        'gas': 21000,
+        'gasPrice': web3.to_wei('10', 'gwei'),
+        'chainId': 97  # BSC Testnet Chain ID
+    }
+
+    signed_tx = web3.eth.account.sign_transaction(tx, private_key=private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+
+    print(f"Transaction sent! Tx hash: {web3.to_hex(tx_hash)}")
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    print(f"Transaction receipt: {tx_receipt}")
+
+    return tx_hash

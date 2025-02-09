@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 from eliza_ai import process_message
-from bnb_interaction import get_bnb_balance, send_dummy_transaction
+from bnb_interaction import get_bnb_balance, send_transaction
 
 app = FastAPI(title="ElizaOS Backend", version="1.0")
 
@@ -57,7 +57,7 @@ async def transaction(
     **Note:** Use with caution on mainnet. Prefer a testnet or simulation environment.
     """
     try:
-        tx_hash = send_dummy_transaction(address, amount)
+        tx_hash = send_transaction(address, amount)
         return {"tx_hash": tx_hash}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

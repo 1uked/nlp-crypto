@@ -77,4 +77,25 @@ Use `curl` or Postman to send requests, or test with:
 pytest tests/
 ```
 
+## Curl conmands
+
+```bash
+curl -X POST "http://localhost:8000/chat" \
+     -H "Content-Type: application/json" \
+     -d '{"message": "What is the balance of you mother"}'
+```
+
+```bash
+curl -X POST "http://localhost:8000/chat" \
+     -H "Content-Type: application/json" \
+     -d '{"message": "What is the balance of 0xYourBNBAddressHere?"}'
+```
+
+```bash
+curl -X POST "http://localhost:8000/chat" \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Please send 0.01 BNB to 0xRecipientAddress"}'
+```
+
+
 
